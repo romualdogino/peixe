@@ -1,11 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // --- ENUMS PARA MELHOR INTEGRIDADE DE DADOS (TIPAGEM RÍGIDA) ---
@@ -46,221 +46,221 @@ enum MovTanqueTipo {
 
 // --- FIM DOS ENUMS ---
 
-
 model User {
-  id          String    @id @default(uuid())
-  name        String
-  email       String    @unique
-  password    String
-  role        Role? // Tipo Enum
-  image       String?
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  lastLogin   DateTime?
-  permissions String[]
+  id          String    @id @default(uuid())
+  name        String
+  email       String    @unique
+  password    String
+  role        Role? // Tipo Enum
+  image       String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLogin   DateTime?
+  permissions String[]
 
-  responsavel_biometrias     Biometria[]          @relation("BiometriaResponsavel")
-  responsavel_qualidadeagua  QualidadeAgua[]      @relation("QualidadeAguaResponsavel")
-  responsavel_registrodiario RegistroDiario[]     @relation("RegistroDiarioResponsavel")
-  responsavel_movtanque      MovimentacaoTanque[] @relation("MovTanqueResponsavel")
-  responsavel_movracao       MovimentacaoRacao[]  @relation("MovRacaoResponsavel")
-  responsavel_regsaude       RegistroSaude[]      @relation("RegSaudeResponsavel")
+  responsavel_biometrias     Biometria[]          @relation("BiometriaResponsavel")
+  responsavel_qualidadeagua  QualidadeAgua[]      @relation("QualidadeAguaResponsavel")
+  responsavel_registrodiario RegistroDiario[]     @relation("RegistroDiarioResponsavel")
+  responsavel_movtanque      MovimentacaoTanque[] @relation("MovTanqueResponsavel")
+  responsavel_movracao       MovimentacaoRacao[]  @relation("MovRacaoResponsavel")
+  responsavel_regsaude       RegistroSaude[]      @relation("RegSaudeResponsavel")
 }
 
 model Tanque {
-  id                String               @id @default(uuid())
-  nome              String               @unique
-  codigo_interno    String?              @unique
-  volume_m3         Float
-  area_m2           Float?
-  tipo              TipoTanque // Tipo Enum
-  tipo_material     String?
-  status            StatusTanque         @default(ATIVO) // Tipo Enum
-  localizacao       String?
-  data_instalacao   DateTime?
-  nivel_agua_cm     Float?
-  isActive          Boolean              @default(true)
-  ciclo_atual_id    String?              @unique
-  ciclo_atual       CicloProducao?       @relation("CicloAtual", fields: [ciclo_atual_id], references: [id])
-  ciclos            CicloProducao[]      @relation("HistoricoCiclos")
-  registros_diarios RegistroDiario[]
-  biometrias        Biometria[]
-  qualidade_agua    QualidadeAgua[]
-  registros_saude   RegistroSaude[]
-  movimentacoes     MovimentacaoTanque[]
+  id                String               @id @default(uuid())
+  nome              String               @unique
+  codigo_interno    String?              @unique
+  volume_m3         Float
+  area_m2           Float?
+  tipo              TipoTanque // Tipo Enum
+  tipo_material     String?
+  status            StatusTanque         @default(ATIVO) // Tipo Enum
+  localizacao       String?
+  data_instalacao   DateTime?
+  nivel_agua_cm     Float?
+  isActive          Boolean              @default(true)
+  ciclo_atual_id    String?              @unique
+  ciclo_atual       CicloProducao?       @relation("CicloAtual", fields: [ciclo_atual_id], references: [id])
+  ciclos            CicloProducao[]      @relation("HistoricoCiclos")
+  registros_diarios RegistroDiario[]
+  biometrias        Biometria[]
+  qualidade_agua    QualidadeAgua[]
+  registros_saude   RegistroSaude[]
+  movimentacoes     MovimentacaoTanque[]
 
-  @@map("tanques")
+  @@map("tanques")
 }
 
 model CicloProducao {
-  id                   String    @id @default(uuid())
-  tanque_id            String
-  especie              String?
-  origem_lote          String?
-  data_inicio          DateTime
-  data_fim             DateTime?
-  quantidade_inicial   Int
-  quantidade_atual     Int?
-  peso_inicial_g       Float
-  peso_atual           Float?
-  mortes               Int?
-  alimentacao_total_kg Float?
-  custo_total          Float?
-  data_prevista_saida  DateTime?
-  status               String    @default("ativo")
-  tanque_ciclo_ativo   Tanque?   @relation("CicloAtual")
-  tanque               Tanque    @relation("HistoricoCiclos", fields: [tanque_id], references: [id])
+  id                   String    @id @default(uuid())
+  tanque_id            String
+  especie              String?
+  origem_lote          String?
+  data_inicio          DateTime
+  data_fim             DateTime?
+  quantidade_inicial   Int
+  quantidade_atual     Int?
+  peso_inicial_g       Float
+  peso_atual           Float?
+  mortes               Int?
+  alimentacao_total_kg Float?
+  custo_total          Float?
+  data_prevista_saida  DateTime?
+  status               String    @default("ativo")
+  observacoes          String?
+  tanque_ciclo_ativo   Tanque?   @relation("CicloAtual")
+  tanque               Tanque    @relation("HistoricoCiclos", fields: [tanque_id], references: [id])
 
-  @@map("ciclos_producao")
+  @@map("ciclos_producao")
 }
 
 model RegistroDiario {
-  id               String   @id @default(uuid())
-  tanque_id        String
-  data             DateTime
-  turno            Turno? // Tipo Enum
-  temperatura_agua Float // Tornada obrigatória
-  quantidade_kg    Float?
-  fracionamento    Int?
-  tipo_racao       String?
-  racao_marca      String?
-  racao_codigo     String?
-  sobras           Boolean?
-  mortalidade      Int?
-  causa_morte      String?
-  horas_aeracao    Float?
-  observacoes      String?
-  eventos_adversos String?
-  responsavel_id   String?
-  isAutomatic      Boolean  @default(false)
-  tanque           Tanque   @relation(fields: [tanque_id], references: [id])
-  responsavel      User?    @relation("RegistroDiarioResponsavel", fields: [responsavel_id], references: [id])
+  id               String   @id @default(uuid())
+  tanque_id        String
+  data             DateTime
+  turno            Turno? // Tipo Enum
+  temperatura_agua Float // Tornada obrigatória
+  quantidade_kg    Float?
+  fracionamento    Int?
+  tipo_racao       String?
+  racao_marca      String?
+  racao_codigo     String?
+  sobras           Boolean?
+  mortalidade      Int?
+  causa_morte      String?
+  horas_aeracao    Float?
+  observacoes      String?
+  eventos_adversos String?
+  responsavel_id   String?
+  isAutomatic      Boolean  @default(false)
+  tanque           Tanque   @relation(fields: [tanque_id], references: [id])
+  responsavel      User?    @relation("RegistroDiarioResponsavel", fields: [responsavel_id], references: [id])
 
-  @@map("registros_diarios")
+  @@map("registros_diarios")
 }
 
 model Biometria {
-  id                        String   @id @default(uuid())
-  tanque_id                 String
-  data_amostra              DateTime
-  idade_lote_dias           Int?
-  tamanho_amostra           Int
-  peso_total_kg             Float
-  peso_minimo               Float?
-  peso_maximo               Float?
-  comprimento_medio_cm      Float
-  comprimento_minimo        Float?
-  comprimento_maximo        Float?
-  altura_minima             Float?
-  altura_maxima             Float?
-  desvio_padrao_peso        Float?
-  desvio_padrao_comprimento Float?
-  observacoes               String?
-  recomendacoes             String?
-  responsavel_id            String?
-  tanque                    Tanque   @relation(fields: [tanque_id], references: [id])
-  responsavel               User?    @relation("BiometriaResponsavel", fields: [responsavel_id], references: [id])
+  id                        String   @id @default(uuid())
+  tanque_id                 String
+  data_amostra              DateTime
+  idade_lote_dias           Int?
+  tamanho_amostra           Int
+  peso_total_kg             Float
+  peso_minimo               Float?
+  peso_maximo               Float?
+  comprimento_medio_cm      Float
+  comprimento_minimo        Float?
+  comprimento_maximo        Float?
+  altura_minima             Float?
+  altura_maxima             Float?
+  desvio_padrao_peso        Float?
+  desvio_padrao_comprimento Float?
+  observacoes               String?
+  recomendacoes             String?
+  responsavel_id            String?
+  tanque                    Tanque   @relation(fields: [tanque_id], references: [id])
+  responsavel               User?    @relation("BiometriaResponsavel", fields: [responsavel_id], references: [id])
 
-  @@map("biometrias")
+  @@map("biometrias")
 }
 
 model QualidadeAgua {
-  id                  String   @id @default(uuid())
-  tanque_id           String
-  data_analise        DateTime
-  hora_coleta         String?
-  fonte_agua          String?
-  metodo_coleta       String?
-  oxigenio_dissolvido Float // Campo OD mantido como Float
-  ph                  Float
-  amonia              Float
-  nitrito             Float
-  nitrato             Float?
-  tds                 Float?
-  orp                 Float?
-  ec                  Float?
-  salppm              Float?
-  sal                 Float?
-  sg                  Float?
-  temperatura         Float
-  transparencia_cm    Int
-  notas               String?
-  responsavel_id      String?
-  tanque              Tanque   @relation(fields: [tanque_id], references: [id])
-  responsavel         User?    @relation("QualidadeAguaResponsavel", fields: [responsavel_id], references: [id])
+  id                  String   @id @default(uuid())
+  tanque_id           String
+  data_analise        DateTime
+  hora_coleta         String?
+  fonte_agua          String?
+  metodo_coleta       String?
+  oxigenio_dissolvido Float // Campo OD mantido como Float
+  ph                  Float
+  amonia              Float
+  nitrito             Float
+  nitrato             Float?
+  tds                 Float?
+  orp                 Float?
+  ec                  Float?
+  salppm              Float?
+  sal                 Float?
+  sg                  Float?
+  temperatura         Float
+  transparencia_cm    Int
+  notas               String?
+  responsavel_id      String?
+  tanque              Tanque   @relation(fields: [tanque_id], references: [id])
+  responsavel         User?    @relation("QualidadeAguaResponsavel", fields: [responsavel_id], references: [id])
 
-  @@map("qualidade_agua")
+  @@map("qualidade_agua")
 }
 
 model RegistroSaude {
-  id                 String    @id @default(uuid())
-  tanque_id          String
-  data_registro      DateTime
-  sintomas           String?
-  percentual_afetado Float?
-  diagnostico        String?
-  patologia_codigo   String?
-  produto            String?
-  dosagem            String?
-  dias_tratamento    Int?
-  dias_carencia      Int?
-  resultado          String?
-  data_diagnostico   DateTime?
-  usuario_id         String?
-  tanque             Tanque    @relation(fields: [tanque_id], references: [id])
-  responsavel        User?     @relation("RegSaudeResponsavel", fields: [usuario_id], references: [id])
+  id                 String    @id @default(uuid())
+  tanque_id          String
+  data_registro      DateTime
+  sintomas           String?
+  percentual_afetado Float?
+  diagnostico        String?
+  patologia_codigo   String?
+  produto            String?
+  dosagem            String?
+  dias_tratamento    Int?
+  dias_carencia      Int?
+  resultado          String?
+  data_diagnostico   DateTime?
+  usuario_id         String?
+  tanque             Tanque    @relation(fields: [tanque_id], references: [id])
+  responsavel        User?     @relation("RegSaudeResponsavel", fields: [usuario_id], references: [id])
 
-  @@map("registros_saude")
+  @@map("registros_saude")
 }
 
 model ProdutoEstoque {
-  id                  String              @id @default(uuid())
-  nome                String              @unique
-  categoria           String?
-  tipo                String
-  unidade_medida      String
-  peso_por_unidade    Float
-  quantidade_unidades Int
-  estoque_atual_kg    Float               @default(0)
-  lote_numero         String?
-  validade            DateTime?
-  fornecedor          String?
-  custo_unitario      Float?
-  data_ultima_entrada DateTime?
-  data_ultima_saida   DateTime?
-  movimentacoes       MovimentacaoRacao[]
+  id                  String              @id @default(uuid())
+  nome                String              @unique
+  categoria           String?
+  tipo                String
+  unidade_medida      String
+  peso_por_unidade    Float
+  quantidade_unidades Int
+  estoque_atual_kg    Float               @default(0)
+  lote_numero         String?
+  validade            DateTime?
+  fornecedor          String?
+  custo_unitario      Float?
+  data_ultima_entrada DateTime?
+  data_ultima_saida   DateTime?
+  movimentacoes       MovimentacaoRacao[]
 
-  @@map("produtos_estoque")
+  @@map("produtos_estoque")
 }
 
 model MovimentacaoTanque {
-  id                String        @id @default(uuid())
-  tanque_id         String
-  tipo_movimentacao MovTanqueTipo // Tipo Enum
-  motivo            String?
-  data              DateTime
-  quantidade        Int
-  peso_medio_g      Float
-  notas             String?
-  usuario_id        String?
-  tanque            Tanque     @relation(fields: [tanque_id], references: [id])
-  responsavel       User?      @relation("MovTanqueResponsavel", fields: [usuario_id], references: [id])
+  id                String        @id @default(uuid())
+  tanque_id         String
+  tipo_movimentacao MovTanqueTipo // Tipo Enum
+  motivo            String?
+  data              DateTime
+  quantidade        Int
+  peso_medio_g      Float
+  notas             String?
+  usuario_id        String?
+  tanque            Tanque        @relation(fields: [tanque_id], references: [id])
+  responsavel       User?         @relation("MovTanqueResponsavel", fields: [usuario_id], references: [id])
 
-  @@map("movimentacoes_tanque")
+  @@map("movimentacoes_tanque")
 }
 
 model MovimentacaoRacao {
-  id             String         @id @default(uuid())
-  produto_id     String
-  tipo_movimento String
-  data           DateTime
-  quantidade_kg  Float
-  lote_id        String?
-  observacoes    String?
-  responsavel_id String?
-  produto        ProdutoEstoque @relation(fields: [produto_id], references: [id])
-  responsavel    User?          @relation("MovRacaoResponsavel", fields: [responsavel_id], references: [id])
+  id             String         @id @default(uuid())
+  produto_id     String
+  tipo_movimento String
+  data           DateTime
+  quantidade_kg  Float
+  lote_id        String?
+  observacoes    String?
+  responsavel_id String?
+  produto        ProdutoEstoque @relation(fields: [produto_id], references: [id])
+  responsavel    User?          @relation("MovRacaoResponsavel", fields: [responsavel_id], references: [id])
 
-  @@map("movimentacoes_racao")
+  @@map("movimentacoes_racao")
 }

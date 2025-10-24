@@ -108,6 +108,7 @@ model CicloProducao {
   custo_total          Float?
   data_prevista_saida  DateTime?
   status               String    @default("ativo")
+  observacoes          String?
   tanque_ciclo_ativo   Tanque?   @relation("CicloAtual")
   tanque               Tanque    @relation("HistoricoCiclos", fields: [tanque_id], references: [id])
 

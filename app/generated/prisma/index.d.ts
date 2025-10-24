@@ -4661,6 +4661,7 @@ export namespace Prisma {
     custo_total: number | null
     data_prevista_saida: Date | null
     status: string | null
+    observacoes: string | null
   }
 
   export type CicloProducaoMaxAggregateOutputType = {
@@ -4679,6 +4680,7 @@ export namespace Prisma {
     custo_total: number | null
     data_prevista_saida: Date | null
     status: string | null
+    observacoes: string | null
   }
 
   export type CicloProducaoCountAggregateOutputType = {
@@ -4697,6 +4699,7 @@ export namespace Prisma {
     custo_total: number
     data_prevista_saida: number
     status: number
+    observacoes: number
     _all: number
   }
 
@@ -4737,6 +4740,7 @@ export namespace Prisma {
     custo_total?: true
     data_prevista_saida?: true
     status?: true
+    observacoes?: true
   }
 
   export type CicloProducaoMaxAggregateInputType = {
@@ -4755,6 +4759,7 @@ export namespace Prisma {
     custo_total?: true
     data_prevista_saida?: true
     status?: true
+    observacoes?: true
   }
 
   export type CicloProducaoCountAggregateInputType = {
@@ -4773,6 +4778,7 @@ export namespace Prisma {
     custo_total?: true
     data_prevista_saida?: true
     status?: true
+    observacoes?: true
     _all?: true
   }
 
@@ -4878,6 +4884,7 @@ export namespace Prisma {
     custo_total: number | null
     data_prevista_saida: Date | null
     status: string
+    observacoes: string | null
     _count: CicloProducaoCountAggregateOutputType | null
     _avg: CicloProducaoAvgAggregateOutputType | null
     _sum: CicloProducaoSumAggregateOutputType | null
@@ -4915,6 +4922,7 @@ export namespace Prisma {
     custo_total?: boolean
     data_prevista_saida?: boolean
     status?: boolean
+    observacoes?: boolean
     tanque_ciclo_ativo?: boolean | CicloProducao$tanque_ciclo_ativoArgs<ExtArgs>
     tanque?: boolean | TanqueDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["cicloProducao"]>
@@ -4935,6 +4943,7 @@ export namespace Prisma {
     custo_total?: boolean
     data_prevista_saida?: boolean
     status?: boolean
+    observacoes?: boolean
     tanque?: boolean | TanqueDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["cicloProducao"]>
 
@@ -4954,6 +4963,7 @@ export namespace Prisma {
     custo_total?: boolean
     data_prevista_saida?: boolean
     status?: boolean
+    observacoes?: boolean
     tanque?: boolean | TanqueDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["cicloProducao"]>
 
@@ -4973,9 +4983,10 @@ export namespace Prisma {
     custo_total?: boolean
     data_prevista_saida?: boolean
     status?: boolean
+    observacoes?: boolean
   }
 
-  export type CicloProducaoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tanque_id" | "especie" | "origem_lote" | "data_inicio" | "data_fim" | "quantidade_inicial" | "quantidade_atual" | "peso_inicial_g" | "peso_atual" | "mortes" | "alimentacao_total_kg" | "custo_total" | "data_prevista_saida" | "status", ExtArgs["result"]["cicloProducao"]>
+  export type CicloProducaoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tanque_id" | "especie" | "origem_lote" | "data_inicio" | "data_fim" | "quantidade_inicial" | "quantidade_atual" | "peso_inicial_g" | "peso_atual" | "mortes" | "alimentacao_total_kg" | "custo_total" | "data_prevista_saida" | "status" | "observacoes", ExtArgs["result"]["cicloProducao"]>
   export type CicloProducaoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tanque_ciclo_ativo?: boolean | CicloProducao$tanque_ciclo_ativoArgs<ExtArgs>
     tanque?: boolean | TanqueDefaultArgs<ExtArgs>
@@ -5009,6 +5020,7 @@ export namespace Prisma {
       custo_total: number | null
       data_prevista_saida: Date | null
       status: string
+      observacoes: string | null
     }, ExtArgs["result"]["cicloProducao"]>
     composites: {}
   }
@@ -5449,6 +5461,7 @@ export namespace Prisma {
     readonly custo_total: FieldRef<"CicloProducao", 'Float'>
     readonly data_prevista_saida: FieldRef<"CicloProducao", 'DateTime'>
     readonly status: FieldRef<"CicloProducao", 'String'>
+    readonly observacoes: FieldRef<"CicloProducao", 'String'>
   }
     
 
@@ -14768,7 +14781,8 @@ export namespace Prisma {
     alimentacao_total_kg: 'alimentacao_total_kg',
     custo_total: 'custo_total',
     data_prevista_saida: 'data_prevista_saida',
-    status: 'status'
+    status: 'status',
+    observacoes: 'observacoes'
   };
 
   export type CicloProducaoScalarFieldEnum = (typeof CicloProducaoScalarFieldEnum)[keyof typeof CicloProducaoScalarFieldEnum]
@@ -15317,6 +15331,7 @@ export namespace Prisma {
     custo_total?: FloatNullableFilter<"CicloProducao"> | number | null
     data_prevista_saida?: DateTimeNullableFilter<"CicloProducao"> | Date | string | null
     status?: StringFilter<"CicloProducao"> | string
+    observacoes?: StringNullableFilter<"CicloProducao"> | string | null
     tanque_ciclo_ativo?: XOR<TanqueNullableScalarRelationFilter, TanqueWhereInput> | null
     tanque?: XOR<TanqueScalarRelationFilter, TanqueWhereInput>
   }
@@ -15337,6 +15352,7 @@ export namespace Prisma {
     custo_total?: SortOrderInput | SortOrder
     data_prevista_saida?: SortOrderInput | SortOrder
     status?: SortOrder
+    observacoes?: SortOrderInput | SortOrder
     tanque_ciclo_ativo?: TanqueOrderByWithRelationInput
     tanque?: TanqueOrderByWithRelationInput
   }
@@ -15360,6 +15376,7 @@ export namespace Prisma {
     custo_total?: FloatNullableFilter<"CicloProducao"> | number | null
     data_prevista_saida?: DateTimeNullableFilter<"CicloProducao"> | Date | string | null
     status?: StringFilter<"CicloProducao"> | string
+    observacoes?: StringNullableFilter<"CicloProducao"> | string | null
     tanque_ciclo_ativo?: XOR<TanqueNullableScalarRelationFilter, TanqueWhereInput> | null
     tanque?: XOR<TanqueScalarRelationFilter, TanqueWhereInput>
   }, "id">
@@ -15380,6 +15397,7 @@ export namespace Prisma {
     custo_total?: SortOrderInput | SortOrder
     data_prevista_saida?: SortOrderInput | SortOrder
     status?: SortOrder
+    observacoes?: SortOrderInput | SortOrder
     _count?: CicloProducaoCountOrderByAggregateInput
     _avg?: CicloProducaoAvgOrderByAggregateInput
     _max?: CicloProducaoMaxOrderByAggregateInput
@@ -15406,6 +15424,7 @@ export namespace Prisma {
     custo_total?: FloatNullableWithAggregatesFilter<"CicloProducao"> | number | null
     data_prevista_saida?: DateTimeNullableWithAggregatesFilter<"CicloProducao"> | Date | string | null
     status?: StringWithAggregatesFilter<"CicloProducao"> | string
+    observacoes?: StringNullableWithAggregatesFilter<"CicloProducao"> | string | null
   }
 
   export type RegistroDiarioWhereInput = {
@@ -16432,6 +16451,7 @@ export namespace Prisma {
     custo_total?: number | null
     data_prevista_saida?: Date | string | null
     status?: string
+    observacoes?: string | null
     tanque_ciclo_ativo?: TanqueCreateNestedOneWithoutCiclo_atualInput
     tanque: TanqueCreateNestedOneWithoutCiclosInput
   }
@@ -16452,6 +16472,7 @@ export namespace Prisma {
     custo_total?: number | null
     data_prevista_saida?: Date | string | null
     status?: string
+    observacoes?: string | null
     tanque_ciclo_ativo?: TanqueUncheckedCreateNestedOneWithoutCiclo_atualInput
   }
 
@@ -16470,6 +16491,7 @@ export namespace Prisma {
     custo_total?: NullableFloatFieldUpdateOperationsInput | number | null
     data_prevista_saida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: StringFieldUpdateOperationsInput | string
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
     tanque_ciclo_ativo?: TanqueUpdateOneWithoutCiclo_atualNestedInput
     tanque?: TanqueUpdateOneRequiredWithoutCiclosNestedInput
   }
@@ -16490,6 +16512,7 @@ export namespace Prisma {
     custo_total?: NullableFloatFieldUpdateOperationsInput | number | null
     data_prevista_saida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: StringFieldUpdateOperationsInput | string
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
     tanque_ciclo_ativo?: TanqueUncheckedUpdateOneWithoutCiclo_atualNestedInput
   }
 
@@ -16509,6 +16532,7 @@ export namespace Prisma {
     custo_total?: number | null
     data_prevista_saida?: Date | string | null
     status?: string
+    observacoes?: string | null
   }
 
   export type CicloProducaoUpdateManyMutationInput = {
@@ -16526,6 +16550,7 @@ export namespace Prisma {
     custo_total?: NullableFloatFieldUpdateOperationsInput | number | null
     data_prevista_saida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: StringFieldUpdateOperationsInput | string
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type CicloProducaoUncheckedUpdateManyInput = {
@@ -16544,6 +16569,7 @@ export namespace Prisma {
     custo_total?: NullableFloatFieldUpdateOperationsInput | number | null
     data_prevista_saida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: StringFieldUpdateOperationsInput | string
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type RegistroDiarioCreateInput = {
@@ -17869,6 +17895,7 @@ export namespace Prisma {
     custo_total?: SortOrder
     data_prevista_saida?: SortOrder
     status?: SortOrder
+    observacoes?: SortOrder
   }
 
   export type CicloProducaoAvgOrderByAggregateInput = {
@@ -17897,6 +17924,7 @@ export namespace Prisma {
     custo_total?: SortOrder
     data_prevista_saida?: SortOrder
     status?: SortOrder
+    observacoes?: SortOrder
   }
 
   export type CicloProducaoMinOrderByAggregateInput = {
@@ -17915,6 +17943,7 @@ export namespace Prisma {
     custo_total?: SortOrder
     data_prevista_saida?: SortOrder
     status?: SortOrder
+    observacoes?: SortOrder
   }
 
   export type CicloProducaoSumOrderByAggregateInput = {
@@ -20206,6 +20235,7 @@ export namespace Prisma {
     custo_total?: number | null
     data_prevista_saida?: Date | string | null
     status?: string
+    observacoes?: string | null
     tanque: TanqueCreateNestedOneWithoutCiclosInput
   }
 
@@ -20225,6 +20255,7 @@ export namespace Prisma {
     custo_total?: number | null
     data_prevista_saida?: Date | string | null
     status?: string
+    observacoes?: string | null
   }
 
   export type CicloProducaoCreateOrConnectWithoutTanque_ciclo_ativoInput = {
@@ -20247,6 +20278,7 @@ export namespace Prisma {
     custo_total?: number | null
     data_prevista_saida?: Date | string | null
     status?: string
+    observacoes?: string | null
     tanque_ciclo_ativo?: TanqueCreateNestedOneWithoutCiclo_atualInput
   }
 
@@ -20265,6 +20297,7 @@ export namespace Prisma {
     custo_total?: number | null
     data_prevista_saida?: Date | string | null
     status?: string
+    observacoes?: string | null
     tanque_ciclo_ativo?: TanqueUncheckedCreateNestedOneWithoutCiclo_atualInput
   }
 
@@ -20534,6 +20567,7 @@ export namespace Prisma {
     custo_total?: NullableFloatFieldUpdateOperationsInput | number | null
     data_prevista_saida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: StringFieldUpdateOperationsInput | string
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
     tanque?: TanqueUpdateOneRequiredWithoutCiclosNestedInput
   }
 
@@ -20553,6 +20587,7 @@ export namespace Prisma {
     custo_total?: NullableFloatFieldUpdateOperationsInput | number | null
     data_prevista_saida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: StringFieldUpdateOperationsInput | string
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type CicloProducaoUpsertWithWhereUniqueWithoutTanqueInput = {
@@ -20590,6 +20625,7 @@ export namespace Prisma {
     custo_total?: FloatNullableFilter<"CicloProducao"> | number | null
     data_prevista_saida?: DateTimeNullableFilter<"CicloProducao"> | Date | string | null
     status?: StringFilter<"CicloProducao"> | string
+    observacoes?: StringNullableFilter<"CicloProducao"> | string | null
   }
 
   export type RegistroDiarioUpsertWithWhereUniqueWithoutTanqueInput = {
@@ -22469,6 +22505,7 @@ export namespace Prisma {
     custo_total?: number | null
     data_prevista_saida?: Date | string | null
     status?: string
+    observacoes?: string | null
   }
 
   export type RegistroDiarioCreateManyTanqueInput = {
@@ -22576,6 +22613,7 @@ export namespace Prisma {
     custo_total?: NullableFloatFieldUpdateOperationsInput | number | null
     data_prevista_saida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: StringFieldUpdateOperationsInput | string
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
     tanque_ciclo_ativo?: TanqueUpdateOneWithoutCiclo_atualNestedInput
   }
 
@@ -22594,6 +22632,7 @@ export namespace Prisma {
     custo_total?: NullableFloatFieldUpdateOperationsInput | number | null
     data_prevista_saida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: StringFieldUpdateOperationsInput | string
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
     tanque_ciclo_ativo?: TanqueUncheckedUpdateOneWithoutCiclo_atualNestedInput
   }
 
@@ -22612,6 +22651,7 @@ export namespace Prisma {
     custo_total?: NullableFloatFieldUpdateOperationsInput | number | null
     data_prevista_saida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: StringFieldUpdateOperationsInput | string
+    observacoes?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type RegistroDiarioUpdateWithoutTanqueInput = {

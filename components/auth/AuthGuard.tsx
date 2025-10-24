@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/contexts/AuthContext'
 import AuthLoading from './AuthLoading'
 
+
 interface AuthGuardProps {
   children: React.ReactNode
   requireAuth?: boolean

@@ -2,46 +2,24 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import { ApiResponse } from '@/app/types'
 
+// GET - Listar todos os tanques
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
-    const tipo = searchParams.get('tipo')
-    const withCiclo = searchParams.get('withCiclo') === 'true'
+    console.log('📋 API Tanques List - Buscando todos os tanques')
 
     const tanques = await prisma.tanque.findMany({
-      where: {
-        isActive: true,
-        ...(status && { status }),
-        ...(tipo && { tipo })
-      },
+      where: { isActive: true },
       include: {
-        ...(withCiclo && {
-          ciclo_atual: {
-            select: {
-              id: true,
-              especie: true,
-              data_inicio: true,
-              quantidade_atual: true,
-              peso_atual: true
-            }
-          }
-        }),
-        _count: {
+        ciclo_atual: {
           select: {
-            registros_diarios: {
-              where: {
-                data: {
-                  gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-                }
-              }
-            }
+            id: true,
+            especie: true,
+            data_inicio: true,
+            status: true
           }
         }
       },
-      orderBy: {
-        nome: 'asc'
-      }
+      orderBy: { nome: 'asc' }
     })
 
     const response: ApiResponse = {
@@ -49,35 +27,26 @@ export async function GET(request: NextRequest) {
       data: tanques
     }
 
+    console.log(`✅ API Tanques List - ${tanques.length} tanques retornados`)
     return NextResponse.json(response)
-  } catch (error) {
-    console.error('Get tanques error:', error)
 
+  } catch (error) {
+    console.error('❌ API Tanques List error:', error)
     return NextResponse.json(
-      { success: false, error: 'Erro ao buscar tanques' },
+      { success: false, error: 'Erro ao carregar tanques' },
       { status: 500 }
     )
   }
 }
 
+// POST - Criar novo tanque
 export async function POST(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id')
     const body = await request.json()
+    console.log('🆕 API Tanques Create - Data:', body)
 
-    const { 
-      nome, 
-      codigo_interno, 
-      volume_m3, 
-      area_m2, 
-      tipo, 
-      tipo_material, 
-      localizacao, 
-      data_instalacao 
-    } = body
-
-    // Validar campos obrigatórios
-    if (!nome || !volume_m3 || !tipo) {
+    // Validações básicas
+    if (!body.nome || !body.volume_m3 || !body.tipo) {
       return NextResponse.json(
         { success: false, error: 'Nome, volume e tipo são obrigatórios' },
         { status: 400 }
@@ -86,18 +55,16 @@ export async function POST(request: NextRequest) {
 
     const tanque = await prisma.tanque.create({
       data: {
-        nome,
-        codigo_interno,
-        volume_m3: parseFloat(volume_m3),
-        area_m2: area_m2 ? parseFloat(area_m2) : undefined,
-        tipo,
-        tipo_material,
-        localizacao,
-        data_instalacao: data_instalacao ? new Date(data_instalacao) : undefined,
-        status: 'VAZIO'
-      },
-      include: {
-        ciclo_atual: true
+        nome: body.nome,
+        codigo_interno: body.codigo_interno,
+        volume_m3: parseFloat(body.volume_m3),
+        area_m2: body.area_m2 ? parseFloat(body.area_m2) : null,
+        tipo: body.tipo,
+        tipo_material: body.tipo_material,
+        status: body.status || 'ATIVO',
+        localizacao: body.localizacao,
+        data_instalacao: body.data_instalacao ? new Date(body.data_instalacao) : null,
+        isActive: true
       }
     })
 
@@ -107,11 +74,11 @@ export async function POST(request: NextRequest) {
       message: 'Tanque criado com sucesso'
     }
 
-    return NextResponse.json(response, { status: 201 })
-  } catch (error) {
-    console.error('Create tanque error:', error)
+    return NextResponse.json(response)
 
-    // Erro de unique constraint
+  } catch (error) {
+    console.error('❌ API Tanques Create error:', error)
+    
     if (error instanceof Error && error.message.includes('Unique constraint')) {
       return NextResponse.json(
         { success: false, error: 'Já existe um tanque com este nome ou código' },

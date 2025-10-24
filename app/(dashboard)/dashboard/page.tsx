@@ -24,11 +24,13 @@ interface Alerta {
 }
 
 interface MetricasRecentes {
-  id: string
-  tipo: string
-  valor: string
-  variacao: number
-  icone: string
+  data: string
+  temperatura_agua: number
+  mortalidade: number
+  quantidade_kg: number
+  tanque: {
+    nome: string
+  }
 }
 
 export default function DashboardPage() {
@@ -45,6 +47,7 @@ export default function DashboardPage() {
   const [alertas, setAlertas] = useState<Alerta[]>([])
   const [metricasRecentes, setMetricasRecentes] = useState<MetricasRecentes[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string>('')
 
   useEffect(() => {
     fetchDashboardData()
@@ -53,58 +56,60 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true)
+      setError('')
       
-      // Dados mockados temporariamente enquanto corrigimos a API
-      setStats({
-        totalTanques: 8,
-        tanquesAtivos: 6,
-        ciclosAtivos: 4,
-        alertas: 2,
-        registrosHoje: 12,
-        producaoTotal: 1250
+      const token = localStorage.getItem('token') || getCookie('token')
+      
+      if (!token) {
+        throw new Error('Token de autenticação não encontrado')
+      }
+
+      const response = await fetch('/api/dashboard', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       })
-      
-      setAlertas([
-        {
-          id: '1',
-          tipo: 'qualidade',
-          titulo: 'Sistema em Desenvolvimento',
-          descricao: 'API de dashboard em ajuste',
-          prioridade: 'media',
-          data: new Date().toISOString()
-        },
-        {
-          id: '2',
-          tipo: 'estoque',
-          titulo: 'Implementação em Andamento',
-          descricao: 'Integração com APIs em progresso',
-          prioridade: 'baixa',
-          data: new Date().toISOString()
-        }
-      ])
-      
-      setMetricasRecentes([
-        {
-          id: '1',
-          tipo: 'Sistema',
-          valor: 'Em Desenvolvimento',
-          variacao: 0,
-          icone: '🚧'
-        },
-        {
-          id: '2',
-          tipo: 'Funcionalidades',
-          valor: '85% Concluído',
-          variacao: 5,
-          icone: '📈'
-        }
-      ])
-      
+
+      if (response.status === 401) {
+        localStorage.removeItem('token')
+        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+        window.location.href = '/login'
+        return
+      }
+
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+
+      if (data.success) {
+        setStats(data.data)
+        setAlertas(data.data.alertasRecentes || [])
+        setMetricasRecentes(data.data.metricasRecentes || [])
+      } else {
+        throw new Error(data.error || 'Erro ao carregar dados')
+      }
     } catch (error) {
       console.error('Erro ao carregar dashboard:', error)
+      setError(error instanceof Error ? error.message : 'Erro desconhecido')
+      
+      if (error instanceof Error && error.message.includes('401')) {
+        localStorage.removeItem('token')
+        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+        window.location.href = '/login'
+      }
     } finally {
       setLoading(false)
     }
+  }
+
+  const getCookie = (name: string): string | null => {
+    const value = `; ${document.cookie}`
+    const parts = value.split(`; ${name}=`)
+    if (parts.length === 2) return parts.pop()?.split(';').shift() || null
+    return null
   }
 
   const getPrioridadeColor = (prioridade: string) => {
@@ -147,12 +152,42 @@ export default function DashboardPage() {
     return '→'
   }
 
+  // Calcular métricas para exibição
+  const temperaturaMedia = metricasRecentes.length > 0 
+    ? metricasRecentes.reduce((sum, m) => sum + m.temperatura_agua, 0) / metricasRecentes.length 
+    : 0
+
+  const mortalidadeTotal = metricasRecentes.reduce((sum, m) => sum + (m.mortalidade || 0), 0)
+  const alimentacaoTotal = metricasRecentes.reduce((sum, m) => sum + (m.quantidade_kg || 0), 0)
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
           <p className="text-gray-600">Carregando dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Erro ao carregar</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={fetchDashboardData}
+            className="btn-primary"
+          >
+            Tentar Novamente
+          </button>
         </div>
       </div>
     )
@@ -170,7 +205,7 @@ export default function DashboardPage() {
             Bem-vindo ao sistema de gestão de piscicultura
           </p>
         </div>
-        <div className="mt-4 sm:mt-0">
+        <div className="mt-4 sm:mt-0 flex space-x-2">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
             {new Date().toLocaleDateString('pt-BR', { 
               weekday: 'long', 
@@ -179,6 +214,15 @@ export default function DashboardPage() {
               day: 'numeric' 
             })}
           </span>
+          <button
+            onClick={fetchDashboardData}
+            className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors"
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Atualizar
+          </button>
         </div>
       </div>
 
@@ -222,7 +266,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-4">
             <span className="text-sm text-green-600 font-medium">
-              {((stats.tanquesAtivos / stats.totalTanques) * 100).toFixed(1)}% em operação
+              {stats.totalTanques > 0 ? `${((stats.tanquesAtivos / stats.totalTanques) * 100).toFixed(1)}% em operação` : 'Sem tanques'}
             </span>
           </div>
         </div>
@@ -374,42 +418,75 @@ export default function DashboardPage() {
         {/* Métricas Recentes */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Métricas do Sistema</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Métricas em Tempo Real</h2>
             <span className="text-sm text-green-600 font-medium">
-              • Em desenvolvimento
+              • Ao vivo
             </span>
           </div>
 
           <div className="space-y-4">
-            {metricasRecentes.map((metrica) => (
-              <div
-                key={metrica.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="text-2xl">{metrica.icone}</div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-900">
-                      {metrica.tipo}
-                    </h3>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
-                      {metrica.valor}
-                    </p>
-                  </div>
-                </div>
-                <div className={`text-right ${getVariacaoColor(metrica.variacao)}`}>
-                  <div className="flex items-center space-x-1">
-                    <span className="text-sm font-medium">
-                      {getVariacaoIcon(metrica.variacao)}
-                    </span>
-                    <span className="text-sm font-medium">
-                      {metrica.variacao > 0 ? '+' : ''}{metrica.variacao}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">vs. anterior</p>
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
+              <div className="flex items-center space-x-3">
+                <div className="text-2xl">🌡️</div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900">
+                    Temperatura Média
+                  </h3>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {temperaturaMedia.toFixed(1)}°C
+                  </p>
                 </div>
               </div>
-            ))}
+              <div className={`text-right ${getVariacaoColor(0)}`}>
+                <div className="flex items-center space-x-1">
+                  <span className="text-sm font-medium">→</span>
+                  <span className="text-sm font-medium">0.0</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">vs. anterior</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
+              <div className="flex items-center space-x-3">
+                <div className="text-2xl">📊</div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900">
+                    Mortalidade Total
+                  </h3>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {mortalidadeTotal} peixes
+                  </p>
+                </div>
+              </div>
+              <div className={`text-right ${getVariacaoColor(0)}`}>
+                <div className="flex items-center space-x-1">
+                  <span className="text-sm font-medium">→</span>
+                  <span className="text-sm font-medium">0</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">vs. anterior</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
+              <div className="flex items-center space-x-3">
+                <div className="text-2xl">🍽️</div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900">
+                    Alimentação Total
+                  </h3>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {alimentacaoTotal.toFixed(1)}kg
+                  </p>
+                </div>
+              </div>
+              <div className={`text-right ${getVariacaoColor(0)}`}>
+                <div className="flex items-center space-x-1">
+                  <span className="text-sm font-medium">→</span>
+                  <span className="text-sm font-medium">0.0</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">vs. anterior</p>
+              </div>
+            </div>
           </div>
 
           {/* Ações Rápidas */}
@@ -473,7 +550,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-4">
-          {/* Exemplo de atividades - em produção viria da API */}
           <div className="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-200">
             <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
               <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -488,33 +564,37 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-200">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+          {stats.registrosHoje > 0 && (
+            <div className="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-900">
+                  {stats.registrosHoje} registros diários realizados hoje
+                </p>
+                <p className="text-xs text-gray-500 mt-1">Atualizado agora</p>
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="text-sm text-gray-900">
-                Dashboard carregado com dados de demonstração
-              </p>
-              <p className="text-xs text-gray-500 mt-1">Há 1 minuto</p>
-            </div>
-          </div>
+          )}
 
-          <div className="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-200">
-            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-              <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+          {stats.ciclosAtivos > 0 && (
+            <div className="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-900">
+                  {stats.ciclosAtivos} ciclos de produção ativos no sistema
+                </p>
+                <p className="text-xs text-gray-500 mt-1">Monitoramento contínuo</p>
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="text-sm text-gray-900">
-                Sistema de autenticação configurado com sucesso
-              </p>
-              <p className="text-xs text-gray-500 mt-1">Há 2 minutos</p>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

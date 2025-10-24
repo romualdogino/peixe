@@ -5,6 +5,7 @@ import { useAuth } from '@/app/contexts/AuthContext'
 import UserMenu from '@/components/auth/UserMenu'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { Calendar, Fish } from 'lucide-react'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -37,6 +38,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       current: pathname.startsWith('/tanques')
     },
     {
+      name: 'Iniciar Ciclo',
+      href: '/ciclos/iniciar',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      current: pathname.startsWith('/ciclos')
+    },
+    {
       name: 'Ciclos de Produção',
       href: '/ciclos-producao',
       icon: (
@@ -45,6 +56,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </svg>
       ),
       current: pathname.startsWith('/ciclos-producao')
+    },
+    {
+      name: 'Registro Diário',
+      description: 'Registrar monitoramento diário',
+      icon: <Calendar className="h-5 w-5" />,
+      href: '/registros-diarios/novo',
+      color: 'text-green-700',
+      bgColor: 'bg-green-50',
+      hoverColor: 'hover:bg-green-100'
     },
     {
       name: 'Registros Diários',
@@ -137,11 +157,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Sidebar para mobile */}
       <div className={`fixed inset-0 flex z-40 md:hidden ${sidebarOpen ? '' : 'hidden'}`}>
         {/* Overlay */}
-        <div 
+        <div
           className="fixed inset-0 bg-gray-600 bg-opacity-75"
           onClick={() => setSidebarOpen(false)}
         ></div>
-        
+
         {/* Sidebar */}
         <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
           <div className="absolute top-0 right-0 -mr-12 pt-2">
@@ -171,16 +191,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`group flex items-center px-2 py-2 text-base font-medium rounded-md transition-colors duration-200 ${
-                    item.current
-                      ? 'bg-primary-100 text-primary-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
+                  className={`group flex items-center px-2 py-2 text-base font-medium rounded-md transition-colors duration-200 ${item.current
+                    ? 'bg-primary-100 text-primary-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <div className={`mr-4 flex-shrink-0 h-6 w-6 ${
-                    item.current ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500'
-                  }`}>
+                  <div className={`mr-4 flex-shrink-0 h-6 w-6 ${item.current ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500'
+                    }`}>
                     {item.icon}
                   </div>
                   {item.name}
@@ -212,15 +230,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                    item.current
-                      ? 'bg-primary-100 text-primary-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
+                  className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${item.current
+                    ? 'bg-primary-100 text-primary-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
                 >
-                  <div className={`mr-3 flex-shrink-0 h-5 w-5 ${
-                    item.current ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500'
-                  }`}>
+                  <div className={`mr-3 flex-shrink-0 h-5 w-5 ${item.current ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500'
+                    }`}>
                     {item.icon}
                   </div>
                   {item.name}
@@ -237,15 +253,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                    item.current
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
+                  className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${item.current
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
                 >
-                  <div className={`mr-3 flex-shrink-0 h-5 w-5 ${
-                    item.current ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500'
-                  }`}>
+                  <div className={`mr-3 flex-shrink-0 h-5 w-5 ${item.current ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500'
+                    }`}>
                     {item.icon}
                   </div>
                   {item.name}

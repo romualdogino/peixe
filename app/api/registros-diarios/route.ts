@@ -1,73 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
+// app/api/registros-diarios/route.ts
+import { NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
-import { ApiResponse, Turno } from '@/app/types'
+// import { getServerSession } from 'next-auth'
 
-export async function GET(request: NextRequest) {
+
+export async function POST(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const data = searchParams.get('data')
-    const turno = searchParams.get('turno') as Turno | null
-    const tanqueId = searchParams.get('tanqueId')
-
-    // Construir where clause com tipos corretos
-    const where: any = {}
-
-    if (data) {
-      where.data = {
-        gte: new Date(data + 'T00:00:00'),
-        lt: new Date(data + 'T23:59:59')
-      }
-    }
-
-    if (turno && Object.values(Turno).includes(turno)) {
-      where.turno = turno
-    }
-
-    if (tanqueId) {
-      where.tanque_id = tanqueId
-    }
-
-    const registros = await prisma.registroDiario.findMany({
-      where,
-      include: {
-        tanque: {
-          select: {
-            nome: true,
-            codigo_interno: true
-          }
-        },
-        responsavel: {
-          select: {
-            name: true
-          }
-        }
-      },
-      orderBy: {
-        data: 'desc'
-      }
-    })
-
-    const response: ApiResponse = {
-      success: true,
-      data: registros
-    }
-
-    return NextResponse.json(response)
-  } catch (error) {
-    console.error('Get registros error:', error)
-
-    return NextResponse.json(
-      { success: false, error: 'Erro ao buscar registros' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const userId = request.headers.get('x-user-id')
     const body = await request.json()
-
+    
     const {
       tanque_id,
       data,
@@ -86,84 +26,150 @@ export async function POST(request: NextRequest) {
       eventos_adversos
     } = body
 
-    // Validar campos obrigatórios
+    // Validar dados obrigatórios
     if (!tanque_id || !data || !temperatura_agua) {
       return NextResponse.json(
-        { success: false, error: 'Tanque, data e temperatura são obrigatórios' },
+        { error: 'Tanque, data e temperatura da água são obrigatórios' },
         { status: 400 }
       )
     }
 
-    // Validar turno se fornecido
-    if (turno && !Object.values(Turno).includes(turno)) {
+    // Verificar se o tanque existe e está ativo
+    const tanque = await prisma.tanque.findUnique({
+      where: { 
+        id: tanque_id,
+        isActive: true 
+      },
+      include: {
+        ciclo_atual: true
+      }
+    })
+
+    if (!tanque) {
       return NextResponse.json(
-        { success: false, error: 'Turno inválido' },
+        { error: 'Tanque não encontrado ou inativo' },
+        { status: 404 }
+      )
+    }
+
+    // Verificar se já existe registro para este tanque na mesma data e turno
+    const registroExistente = await prisma.registroDiario.findFirst({
+      where: {
+        tanque_id,
+        data: new Date(data),
+        turno: turno || null
+      }
+    })
+
+    if (registroExistente) {
+      return NextResponse.json(
+        { error: 'Já existe um registro para este tanque na data e turno selecionados' },
         { status: 400 }
       )
     }
 
+    // TODO: Obter usuário da sessão quando auth estiver implementado
+    // const session = await getServerSession()
+    // const responsavel_id = session?.user?.id
+
+    // Criar o registro diário
     const registro = await prisma.registroDiario.create({
       data: {
         tanque_id,
         data: new Date(data),
-        turno: turno as Turno,
+        turno: turno || null,
         temperatura_agua: parseFloat(temperatura_agua),
-        quantidade_kg: quantidade_kg ? parseFloat(quantidade_kg) : undefined,
-        fracionamento: fracionamento ? parseInt(fracionamento) : undefined,
-        tipo_racao,
-        racao_marca,
-        racao_codigo,
-        sobras,
-        mortalidade: mortalidade ? parseInt(mortalidade) : undefined,
-        causa_morte,
-        horas_aeracao: horas_aeracao ? parseFloat(horas_aeracao) : undefined,
-        observacoes,
-        eventos_adversos,
-        responsavel_id: userId || undefined
+        quantidade_kg: quantidade_kg ? parseFloat(quantidade_kg) : null,
+        fracionamento: fracionamento ? parseInt(fracionamento) : null,
+        tipo_racao: tipo_racao || null,
+        racao_marca: racao_marca || null,
+        racao_codigo: racao_codigo || null,
+        sobras: sobras || false,
+        mortalidade: mortalidade ? parseInt(mortalidade) : null,
+        causa_morte: causa_morte || null,
+        horas_aeracao: horas_aeracao ? parseFloat(horas_aeracao) : null,
+        observacoes: observacoes || null,
+        eventos_adversos: eventos_adversos || null,
+        responsavel_id: null // TODO: Adicionar quando auth estiver pronto
       },
       include: {
         tanque: {
           select: {
-            nome: true
+            nome: true,
+            codigo_interno: true,
+            ciclo_atual: {
+              select: {
+                especie: true,
+                quantidade_atual: true
+              }
+            }
           }
         }
       }
     })
 
-    // Atualizar ciclo atual se houver mortalidade
-    if (mortalidade && mortalidade > 0) {
-      const tanque = await prisma.tanque.findUnique({
-        where: { id: tanque_id },
-        include: { ciclo_atual: true }
-      })
+    return NextResponse.json({
+      success: true,
+      registro,
+      message: 'Registro diário criado com sucesso'
+    })
 
-      if (tanque?.ciclo_atual) {
-        await prisma.cicloProducao.update({
-          where: { id: tanque.ciclo_atual.id },
-          data: {
-            mortes: {
-              increment: parseInt(mortalidade)
-            },
-            quantidade_atual: {
-              decrement: parseInt(mortalidade)
-            }
-          }
-        })
+  } catch (error) {
+    console.error('Erro ao criar registro diário:', error)
+    return NextResponse.json(
+      { error: 'Erro interno do servidor ao criar registro diário' },
+      { status: 500 }
+    )
+  }
+}
+
+// GET para listar registros
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const tanque_id = searchParams.get('tanque_id')
+    const data = searchParams.get('data')
+
+    const where: any = {}
+
+    if (tanque_id) {
+      where.tanque_id = tanque_id
+    }
+
+    if (data) {
+      where.data = {
+        gte: new Date(data + 'T00:00:00.000Z'),
+        lte: new Date(data + 'T23:59:59.999Z')
       }
     }
 
-    const response: ApiResponse = {
-      success: true,
-      data: registro,
-      message: 'Registro diário criado com sucesso'
-    }
+    const registros = await prisma.registroDiario.findMany({
+      where,
+      include: {
+        tanque: {
+          select: {
+            nome: true,
+            codigo_interno: true
+          }
+        },
+        responsavel: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: {
+        data: 'desc'
+      },
+      take: 50
+    })
 
-    return NextResponse.json(response, { status: 201 })
+    return NextResponse.json(registros)
   } catch (error) {
-    console.error('Create registro error:', error)
-
+    console.error('Erro ao buscar registros:', error)
     return NextResponse.json(
-      { success: false, error: 'Erro ao criar registro diário' },
+      { error: 'Erro ao buscar registros diários' },
       { status: 500 }
     )
   }

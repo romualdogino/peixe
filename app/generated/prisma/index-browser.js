@@ -165,7 +165,8 @@ exports.Prisma.CicloProducaoScalarFieldEnum = {
   alimentacao_total_kg: 'alimentacao_total_kg',
   custo_total: 'custo_total',
   data_prevista_saida: 'data_prevista_saida',
-  status: 'status'
+  status: 'status',
+  observacoes: 'observacoes'
 };
 
 exports.Prisma.RegistroDiarioScalarFieldEnum = {
